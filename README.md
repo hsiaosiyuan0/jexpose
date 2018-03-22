@@ -26,10 +26,7 @@ package com.hsiaosiyuan;
 
 import org.apache.http.message.BasicHeader;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.TreeMap;
+import java.util.*;
 
 public interface Service {
 
