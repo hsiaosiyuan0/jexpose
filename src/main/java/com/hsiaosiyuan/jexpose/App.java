@@ -1,7 +1,6 @@
 package com.hsiaosiyuan.jexpose;
 
 import com.alibaba.fastjson.JSON;
-import com.hsiaosiyuan.jexpose.signature.Parser;
 import com.hsiaosiyuan.jexpose.signature.node.Node;
 import net.lingala.zip4j.core.ZipFile;
 import net.lingala.zip4j.exception.ZipException;
@@ -47,12 +46,6 @@ public class App {
 
     String dist2 = writeJson2file(jar, JSON.toJSONString(ClassResolver.getClassPool(), true));
     System.out.println(dist2);
-
-//    new Parser("(Ljava/lang/String;[B)Z").parseMethodTypeSignature();
-
-//    Node node = new Parser("Ljava/util/HashMap<TK;TV;>.HashIterator<TK;>;").parseTypeSignature();
-//    Node node = new Parser("<T:Ljava/lang/Object;>(I)Ljava/lang/Class<+TT;>;").parseMethodTypeSignature();
-//    System.out.println(node);
   }
 
   private static Path extractJar(File jar) throws IOException, ZipException {
