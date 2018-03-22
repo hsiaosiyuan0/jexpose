@@ -1,9 +1,18 @@
 package com.hsiaosiyuan.jexpose.signature.node;
 
-public class Primitive extends TypeSignature {
-  public String name;
+import java.util.HashSet;
 
-  public Primitive(String name) {
-    this.name = name;
+public class Primitive extends TypeSignature {
+  public String binaryName;
+
+  public Primitive(String binaryName) {
+    this.binaryName = binaryName;
+  }
+
+  @Override
+  public HashSet<String> collectRefClasses() {
+    return new HashSet<>() {{
+      add(binaryName);
+    }};
   }
 }

@@ -1,6 +1,8 @@
 grammar Signature;
 
-// reference http://download.forge.objectweb.org/asm/asm4-guide.pdf
+// reference:
+// http://download.forge.objectweb.org/asm/asm4-guide.pdf
+// Section: 4.1.1. Structure
 
 // typeSignature
 typeSignature

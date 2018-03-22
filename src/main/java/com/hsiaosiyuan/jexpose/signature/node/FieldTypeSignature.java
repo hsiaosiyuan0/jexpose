@@ -1,4 +1,4 @@
 package com.hsiaosiyuan.jexpose.signature.node;
 
-public class FieldTypeSignature extends TypeSignature {
+public abstract class FieldTypeSignature extends TypeSignature {
 }

@@ -1,5 +1,7 @@
 package com.hsiaosiyuan.jexpose.signature.node;
 
+import java.util.HashSet;
+
 public class TypeArg extends Node {
   public static final TypeArg wildcard = new TypeArg(true);
 
@@ -12,5 +14,11 @@ public class TypeArg extends Node {
 
   public TypeArg(boolean isWildcard) {
     this.isWildcard = isWildcard;
+  }
+
+  @Override
+  public HashSet<String> collectRefClasses() {
+    if (type == null) return new HashSet<>();
+    return type.collectRefClasses();
   }
 }

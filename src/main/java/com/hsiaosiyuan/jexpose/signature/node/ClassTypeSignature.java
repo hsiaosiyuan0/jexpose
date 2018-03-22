@@ -1,31 +1,50 @@
 package com.hsiaosiyuan.jexpose.signature.node;
 
-import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.LinkedList;
 
 public class ClassTypeSignature extends FieldTypeSignature {
-  public ArrayList<String> fullQualifiedName;
+  public String binaryName;
   public LinkedList<TypeArg> typeArgs;
   public LinkedList<Sub> subTypes;
 
-  public static class Sub {
+  public ClassTypeSignature() {
+    typeArgs = new LinkedList<>();
+    subTypes = new LinkedList<>();
+  }
+
+  public boolean hasTypeArgs() {
+    return typeArgs.size() > 0;
+  }
+
+  public static class Sub extends Node {
     public String name;
     public LinkedList<TypeArg> typeArgs;
-  }
 
-  public String getFullQualifiedName() {
-    if (fullQualifiedName.size() == 0) return "";
-    if (fullQualifiedName.size() == 1) return fullQualifiedName.get(0);
-
-    StringBuilder s = new StringBuilder();
-    s.append(fullQualifiedName.get(0));
-    for (int i = 1; i < fullQualifiedName.size(); i++) {
-      s.append("/").append(fullQualifiedName.get(i));
+    public Sub() {
+      typeArgs = new LinkedList<>();
     }
-    return s.toString();
+
+    @Override
+    public HashSet<String> collectRefClasses() {
+      HashSet<String> refs = new HashSet<>();
+      for (TypeArg ta : typeArgs) {
+        refs.addAll(ta.collectRefClasses());
+      }
+      return refs;
+    }
   }
 
-  public boolean hasTypeArgs(){
-    return typeArgs != null && typeArgs.size() > 0;
+  @Override
+  public HashSet<String> collectRefClasses() {
+    HashSet<String> refs = new HashSet<>();
+    refs.add(binaryName);
+    for (TypeArg ta : typeArgs) {
+      refs.addAll(ta.collectRefClasses());
+    }
+    for (Sub s : subTypes) {
+      refs.addAll(s.collectRefClasses());
+    }
+    return refs;
   }
 }

@@ -1,40 +1,61 @@
 package com.hsiaosiyuan.jexpose.signature.node;
 
-public class Node {
+import com.alibaba.fastjson.annotation.JSONField;
 
+import java.util.HashSet;
+
+public abstract class Node {
+
+  @JSONField(serialize=false)
   public boolean isPrimitive() {
     return this instanceof Primitive;
   }
 
+  @JSONField(serialize=false)
   public boolean isArray() {
     return this instanceof ArrayTypeSignature;
   }
 
-  public boolean isClass() {
+  @JSONField(serialize=false)
+  public boolean isClassType() {
     return this instanceof ClassTypeSignature;
   }
 
+  @JSONField(serialize=false)
+  public boolean isClass() {
+    return this instanceof ClassSignature;
+  }
+
+  @JSONField(serialize=false)
   public boolean isTypeVar() {
     return this instanceof TypeVar;
   }
 
-  public boolean isVoidType() {
-    return this instanceof VoidType;
-  }
-
+  @JSONField(serialize=false)
   public Primitive asPrimitive() {
     return (Primitive) this;
   }
 
+  @JSONField(serialize=false)
   public ArrayTypeSignature asArray() {
     return (ArrayTypeSignature) this;
   }
 
-  public ClassTypeSignature asClass() {
+  @JSONField(serialize=false)
+  public ClassTypeSignature asClassType() {
     return (ClassTypeSignature) this;
   }
 
+  @JSONField(serialize=false)
+  public ClassSignature asClass() {
+    return (ClassSignature) this;
+  }
+
+  @JSONField(serialize=false)
   public TypeVar asTypeVar() {
     return (TypeVar) this;
   }
+
+  @JSONField(serialize=false)
+  public abstract HashSet<String> collectRefClasses();
 }

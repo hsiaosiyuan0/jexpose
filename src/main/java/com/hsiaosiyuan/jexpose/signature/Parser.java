@@ -1,14 +1,13 @@
 package com.hsiaosiyuan.jexpose.signature;
 
-import java.util.Map;
-
 import com.hsiaosiyuan.jexpose.signature.node.*;
 import com.hsiaosiyuan.jexpose.signature.node.ClassTypeSignature.Sub;
 
-import static java.util.Map.entry;
-
 import java.util.ArrayList;
 import java.util.LinkedList;
+import java.util.Map;
+
+import static java.util.Map.entry;
 
 public class Parser {
   private static final Map<String, String> primitives = Map.ofEntries(
@@ -37,17 +36,24 @@ public class Parser {
 
   public MethodTypeSignature parseMethodTypeSignature() {
     MethodTypeSignature node = new MethodTypeSignature();
-    node.typeParams = parseTypeParams();
-    node.params = parseParams();
+    node.typeParams.addAll(parseTypeParams());
+    node.params.addAll(parseParams());
     node.ret = parseReturn();
     node.exceptions = parseExceptions();
     return node;
   }
 
-  private ArrayList<Node> parseExceptions() {
-    if (!peek().equals("^")) return null;
+  public ClassSignature parseClassSignature() {
+    ClassSignature node = new ClassSignature();
+    node.typeParams.addAll(parseTypeParams());
+    node.superClasses.addAll(parseClassTypeSignatures());
+    return node;
+  }
 
+  private ArrayList<Node> parseExceptions() {
     ArrayList<Node> nodes = new ArrayList<>();
+    if (!peek().equals("^")) return nodes;
+
     while (peek().equals("^")) {
       read();
       nodes.add(parseException());
@@ -68,7 +74,7 @@ public class Parser {
   private TypeSignature parseReturn() {
     if (peek().equals("V")) {
       read();
-      return VoidType.v;
+      return new Primitive(primitives.get("V"));
     }
     return parseTypeSignature();
   }
@@ -87,23 +93,25 @@ public class Parser {
   }
 
   private ArrayList<TypeParam> parseTypeParams() {
-    if (!peek().equals("<")) return null;
-    read(); // consume '<'
     ArrayList<TypeParam> typeParams = new ArrayList<>();
+    if (!peek().equals("<")) return typeParams;
+    read(); // consume '<'
     while (!peek().equals(">")) {
-      typeParams.add(parseParam());
+      typeParams.add(parseTypeParam());
     }
     read(); // consume '>'
     return typeParams;
   }
 
-  private TypeParam parseParam() {
+  private TypeParam parseTypeParam() {
     TypeParam node = new TypeParam();
     node.name = parseId();
     node.types = new ArrayList<>();
     while (peek().equals(":")) {
       read();
-      node.types.add(parseFieldTypeSignature());
+      FieldTypeSignature n = parseFieldTypeSignature();
+      if (n != null)
+        node.types.add(n);
     }
     return node;
   }
@@ -136,12 +144,20 @@ public class Parser {
     return node;
   }
 
-  private FieldTypeSignature parseClassTypeSignature() {
+  private ArrayList<ClassTypeSignature> parseClassTypeSignatures() {
+    ArrayList<ClassTypeSignature> nodes = new ArrayList<>();
+    while (peek().equals("L")) {
+      nodes.add(parseClassTypeSignature());
+    }
+    return nodes;
+  }
+
+  private ClassTypeSignature parseClassTypeSignature() {
     read(); // consume 'L';
     ClassTypeSignature node = new ClassTypeSignature();
-    node.fullQualifiedName = parseFullQualifiedName();
-    node.typeArgs = parseTypeArgs();
-    node.subTypes = parseSubTypes();
+    node.binaryName = parseBinaryName();
+    node.typeArgs.addAll(parseTypeArgs());
+    node.subTypes.addAll(parseSubTypes());
     read(); // consume ';'
     return node;
   }
@@ -156,18 +172,18 @@ public class Parser {
       read();
       Sub sub = new Sub();
       sub.name = parseId();
-      sub.typeArgs = parseTypeArgs();
+      sub.typeArgs.addAll(parseTypeArgs());
       subs.add(sub);
     }
     return subs;
   }
 
   private LinkedList<TypeArg> parseTypeArgs() {
+    LinkedList<TypeArg> args = new LinkedList<>();
     if (!ahead("<"))
-      return null;
+      return args;
 
     read(); // consume '<'
-    LinkedList<TypeArg> args = new LinkedList<>();
     while (!ahead(">")) {
       args.add(parseTypeArg());
     }
@@ -192,18 +208,19 @@ public class Parser {
     return arg;
   }
 
-  private ArrayList<String> parseFullQualifiedName() {
-    ArrayList<String> name = new ArrayList<>();
+  private String parseBinaryName() {
+    StringBuilder name = new StringBuilder();
     while (true) {
       String n = parseId();
       if (n == null)
         break;
-      name.add(n);
+      name.append(n);
       if (peek().equals("/")) {
+        name.append("/");
         read();
       }
     }
-    return name;
+    return name.toString();
   }
 
   private String parseId() {
