@@ -12,12 +12,48 @@ path-2-target-jar| path to the jar which to be exposed, the jar itself must copy
 classpath | although the jar contains all of it's dependencies the java runtime such as `java/lang/*` are still isolated, so you should specific a path to indicate where jexpose to find theme
 com.example.Entry| the entry point to start our exposing
 
-after exposing, jexpose will produce two json files, one contains the structure of your entry point class(interface) another contains a
+After exposing, jexpose will produce two json files, one contains the structure of your entry point class(interface) another contains a
 class pool which is comprise of all of your entry point references
 
-## output example
+## example
 
-### entry point
+Below are a input/output pair for for a glance.
+
+### input
+
+```java
+package com.hsiaosiyuan;
+
+import org.apache.http.message.BasicHeader;
+
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.TreeMap;
+
+public interface Service {
+
+  ArrayList<User> users = new ArrayList<User>();
+
+  boolean login(String username, byte[] password);
+
+  User getUser(String username);
+
+  User getUser(int id);
+
+  ArrayList<User> getUserFriends(User user);
+
+  boolean doSomething1(ArrayList<BasicHeader> headers, int[][] a);
+
+  ArrayList<User> doSomething2(HashMap<String, ArrayList<BasicHeader>> headersMap, int[][] a, ArrayList<Integer>[] b);
+
+  Map doSomething3(TreeMap<String, User> map, int[][] a);
+
+  int doSomething4(char p1, double p2, long p3, int p4, User[] p5);
+}
+```
+
+### (1/2) output json for describing entry point structure
 
 ```json
 {
@@ -165,7 +201,7 @@ class pool which is comprise of all of your entry point references
 }
 ```
 
-### class pool
+### (2/2) output json for class pool
 
 ```json
 {
