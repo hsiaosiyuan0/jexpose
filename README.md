@@ -15,9 +15,9 @@ com.example.Entry| the entry point to start our exposing
 after exposing, jexpose will produce two json files, one contains the structure of your entry point class(interface) another contains a
 class pool which is comprise of all of your entry point references
 
-# output example
+## output example
 
-entry point
+### entry point
 
 ```json
 {
@@ -165,7 +165,7 @@ entry point
 }
 ```
 
-class pool
+### class pool
 
 ```json
 {
