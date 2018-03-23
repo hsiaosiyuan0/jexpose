@@ -3,13 +3,13 @@
 This project can expose class graph inside of jar.
 
 ```
-jexpose classpath path-2-target-jar com.example.Entry
+jexpose classpath path-2-jar-dir com.example.Entry
 ```
 
 Option | Meaning
 -------|--------
-path-2-target-jar| path to the jar which to be exposed, the jar itself must copy all of it's dependencies
-classpath | although the jar contains all of it's dependencies the java runtime such as `java/lang/*` are still isolated, so you should specific a path to indicate where jexpose to find theme
+path-2-jar-dir| path to a directory which is comprise of the target jar and all of it's dependencies
+classpath | although you've specified the tar jar and all of it's dependencies the java runtime such as `java/lang/*` are still isolated, so you should indicate a path to tell jexpose where to find theme
 com.example.Entry| the entry point to start our exposing
 
 After exposing, jexpose will produce two json files, one contains the structure of your entry point class(interface) another contains a
