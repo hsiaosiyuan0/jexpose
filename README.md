@@ -9,7 +9,7 @@ jexpose classpath path-2-jar-dir com.example.Entry
 Option | Meaning
 -------|--------
 path-2-jar-dir| path to a directory which is comprise of the target jar and all of it's dependencies
-classpath | although you've specified the tar jar and all of it's dependencies the java runtime such as `java/lang/*` are still isolated, so you should indicate a path to tell jexpose where to find theme
+classpath | although you've specified the tar jar and all of it's dependencies the java runtime such as `java/lang/*` are still isolated, so you should indicate a path to tell jexpose where to find them
 com.example.Entry| the entry point to start our exposing
 
 After exposing, jexpose will produce two json files, one contains the structure of your entry point class(interface) another contains a
