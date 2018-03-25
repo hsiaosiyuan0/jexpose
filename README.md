@@ -17,7 +17,7 @@ class pool which is comprise of all of your entry point references
 
 ## example
 
-Below are a input/output pair for for a glance.
+Below is a input/output pair for for a glance.
 
 ### input
 
