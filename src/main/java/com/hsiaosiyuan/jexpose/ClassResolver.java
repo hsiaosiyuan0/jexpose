@@ -13,6 +13,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
@@ -99,6 +100,7 @@ public class ClassResolver extends ClassVisitor {
   @Override
   public FieldVisitor visitField(int access, String name, String descriptor, String signature, Object value) {
     TypeSignature ts = new Parser(signature != null ? signature : descriptor).parseTypeSignature();
+    ts.isStatic = (access & Opcodes.ACC_STATIC) != 0;
     clazz.fields.put(name, ts);
     return super.visitField(access, name, descriptor, signature, value);
   }
@@ -130,7 +132,19 @@ public class ClassResolver extends ClassVisitor {
     return classPool;
   }
 
-  private boolean isBuiltin(String binaryName) {
+  public static HashMap<String, ClassSignature> getClassPoolWithoutBuiltin() {
+    HashMap<String, ClassSignature> ret = new HashMap<>();
+    for (Map.Entry<String, ClassSignature> entry : classPool.entrySet()) {
+      String key = entry.getKey();
+      if (isBuiltin(key)) {
+        continue;
+      }
+      ret.put(key, entry.getValue());
+    }
+    return ret;
+  }
+
+  private static boolean isBuiltin(String binaryName) {
     return binaryName.startsWith("java/") || binaryName.startsWith("sun/");
   }
 }
