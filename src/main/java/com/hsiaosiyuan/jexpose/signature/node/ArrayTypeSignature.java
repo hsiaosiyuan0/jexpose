@@ -10,4 +10,9 @@ public class ArrayTypeSignature extends FieldTypeSignature {
   public HashSet<String> collectRefClasses() {
     return elementType.collectRefClasses();
   }
+
+  @Override
+  public HashSet<String> getDirectRefClasses() {
+    return elementType.getDirectRefClasses();
+  }
 }

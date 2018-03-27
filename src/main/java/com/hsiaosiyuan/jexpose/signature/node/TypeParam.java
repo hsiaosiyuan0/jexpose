@@ -19,4 +19,13 @@ public class TypeParam extends Node {
     }
     return refs;
   }
+
+  @Override
+  public HashSet<String> getDirectRefClasses() {
+    HashSet<String> refs = new HashSet<>();
+    for (FieldTypeSignature ts : types) {
+      refs.addAll(ts.getDirectRefClasses());
+    }
+    return refs;
+  }
 }

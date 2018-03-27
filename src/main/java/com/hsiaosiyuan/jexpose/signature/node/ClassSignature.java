@@ -4,6 +4,7 @@ import com.alibaba.fastjson.annotation.JSONField;
 import com.hsiaosiyuan.jexpose.ClassResolver;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 public class ClassSignature extends Node {
   @JSONField(serialize = false)
@@ -16,6 +17,8 @@ public class ClassSignature extends Node {
   public ArrayList<ClassTypeSignature> superClasses;
 
   public boolean isInterface;
+
+  public boolean isEnum;
 
   @JSONField(serialize = false)
   public HashMap<String, TypeSignature> fields;
@@ -54,6 +57,23 @@ public class ClassSignature extends Node {
     return refs;
   }
 
+  @Override
+  public HashSet<String> getDirectRefClasses() {
+    HashSet<String> refs = new HashSet<>();
+    for (TypeParam tp : typeParams) {
+      for (FieldTypeSignature ts : tp.types) {
+        refs.addAll(ts.getDirectRefClasses());
+      }
+    }
+    for (TypeSignature ts : getFinalFields().values()) {
+      refs.addAll(ts.getDirectRefClasses());
+    }
+    for (MethodTypeSignature ms : methods.values()) {
+      refs.addAll(ms.getDirectRefClasses());
+    }
+    return refs;
+  }
+
   public ClassTypeSignature toClassTypeSignature() {
     ClassTypeSignature node = new ClassTypeSignature();
     node.binaryName = binaryName;
@@ -64,6 +84,11 @@ public class ClassSignature extends Node {
   public ClassTypeSignature getSuperClass() {
     if (superClasses.size() > 0) return superClasses.get(0);
     return null;
+  }
+
+  @JSONField(name = "name")
+  public String getName() {
+    return binaryName.replace("/", ".");
   }
 
   @JSONField(name = "fields")
@@ -81,6 +106,11 @@ public class ClassSignature extends Node {
       fields.putAll(classPool.get(cs.binaryName).fields);
     }
     fields.putAll(this.fields);
+    if (isEnum)
+      return (HashMap<String, TypeSignature>) fields.entrySet().stream()
+        .filter(item -> !item.getKey().equals("$VALUES"))
+        .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
+
     HashMap<String, TypeSignature> noStatic = new HashMap<>();
     for (Map.Entry<String, TypeSignature> entry : fields.entrySet()) {
       String key = entry.getKey();
@@ -95,6 +125,8 @@ public class ClassSignature extends Node {
   @JSONField(name = "methods")
   public HashMap<String, MethodTypeSignature> getMethods() {
     HashMap<String, MethodTypeSignature> noInternal = new HashMap<>();
+    if (isEnum) return noInternal;
+
     for (Map.Entry<String, MethodTypeSignature> entry : methods.entrySet()) {
       String key = entry.getKey();
       MethodTypeSignature value = entry.getValue();

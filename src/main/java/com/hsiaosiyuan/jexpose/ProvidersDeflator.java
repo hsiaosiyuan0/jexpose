@@ -15,6 +15,7 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.concurrent.ExecutionException;
 
 public class ProvidersDeflator {
@@ -114,9 +115,31 @@ public class ProvidersDeflator {
   }
 
   private void saveResult() throws IOException {
+    ArrayList<String> providers = new ArrayList<>(resolvedProviders.keySet());
+    HashMap<String, ClassSignature> classPool = ClassResolver.getClassPoolWithoutBuiltin();
+
+    HashSet<String> directRefs = new HashSet<>(providers);
+    for (String p : providers) {
+      ClassSignature cs = classPool.get(p.replace(".", "/"));
+      HashSet<String> refs = cs.getDirectRefClasses();
+      for (String r : refs) {
+        ClassSignature c = classPool.get(r);
+        if (c == null) continue;
+        directRefs.addAll(c.getDirectRefClasses());
+      }
+      directRefs.addAll(refs);
+    }
+
+    HashMap<String, ClassSignature> res = new HashMap<>();
+    for (String r : directRefs) {
+      ClassSignature cs = classPool.get(r.replace(".", "/"));
+      if (cs != null) res.put(cs.getName(), cs);
+    }
+
     Result result = new Result();
-    result.providers = new ArrayList<>(resolvedProviders.keySet());
-    result.classPool = ClassResolver.getClassPoolWithoutBuiltin();
+    result.providers = providers;
+    result.classes = res;
+
     int feature = JSON.DEFAULT_GENERATE_FEATURE |= SerializerFeature.DisableCircularReferenceDetect.getMask();
     feature |= SerializerFeature.PrettyFormat.getMask();
     writeJson2file(JSON.toJSONString(result, feature));
@@ -129,8 +152,8 @@ public class ProvidersDeflator {
     writer.flush();
   }
 
-  public static class Result {
+  public class Result {
     public ArrayList<String> providers;
-    public HashMap<String, ClassSignature> classPool;
+    public HashMap<String, ClassSignature> classes;
   }
 }

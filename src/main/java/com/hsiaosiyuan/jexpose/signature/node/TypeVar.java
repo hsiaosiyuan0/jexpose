@@ -13,4 +13,9 @@ public class TypeVar extends FieldTypeSignature {
   public HashSet<String> collectRefClasses() {
     return new HashSet<>();
   }
+
+  @Override
+  public HashSet<String> getDirectRefClasses() {
+    return new HashSet<>();
+  }
 }

@@ -21,4 +21,10 @@ public class TypeArg extends Node {
     if (type == null) return new HashSet<>();
     return type.collectRefClasses();
   }
+
+  @Override
+  public HashSet<String> getDirectRefClasses() {
+    if (type == null) return new HashSet<>();
+    return type.getDirectRefClasses();
+  }
 }

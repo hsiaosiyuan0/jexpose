@@ -93,6 +93,7 @@ public class ClassResolver extends ClassVisitor {
     }
     clazz.setName(name);
     clazz.isInterface = (access & Opcodes.ACC_INTERFACE) != 0;
+    clazz.isEnum = (access & Opcodes.ACC_ENUM) != 0;
 
     classPool.put(clazz.binaryName, clazz);
   }
