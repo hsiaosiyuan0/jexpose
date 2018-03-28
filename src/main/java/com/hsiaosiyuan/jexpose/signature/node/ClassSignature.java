@@ -113,6 +113,7 @@ public class ClassSignature extends Node {
       sct = classPool.get(sct.binaryName).getSuperClass();
     }
 
+    ArrayList<HashMap<String, TypeSignature>> superFields = new ArrayList<>();
     ArrayList<TypeParam> childTypeParams = typeParams;
     ArrayList<TypeParam> childAppliedTypeParams = typeParams;
     for (ClassTypeSignature sp : superClasses) {
@@ -133,9 +134,13 @@ public class ClassSignature extends Node {
 
       ClassSignature spc = ClassResolver.getClassPool().get(sp.binaryName);
       HashMap<String, TypeSignature> appliedFields = spc.applyChildTypeParams(childTPSMatched);
-      fields.putAll(appliedFields);
+      superFields.add(appliedFields);
       childTypeParams = spc.typeParams;
       childAppliedTypeParams = spc.appliedTypeParams;
+    }
+
+    for (int i = superFields.size() - 1; i > 0; --i) {
+      fields.putAll(superFields.get(i));
     }
 
     fields.putAll(this.fields);
@@ -217,5 +222,25 @@ public class ClassSignature extends Node {
   public ArrayList<TypeParam> getFinalTypeParams() {
 
     return typeParams;
+  }
+
+  @JSONField(serialize = false)
+  public String genUniqueMethodName(String name) {
+    Set<String> names = methods.keySet();
+    for (int i = 0; i < 100; ++i) {
+      String n = name + "@override" + i;
+      if (!names.contains(n)) return n;
+    }
+    throw new UnsupportedOperationException("too many override methods");
+  }
+
+  public void addMethod(String name, MethodTypeSignature method) {
+    if (methods.get(name) == null) {
+      methods.put(name, method);
+      return;
+    }
+    method.isOverride = true;
+    name = genUniqueMethodName(name);
+    methods.put(name, method);
   }
 }
