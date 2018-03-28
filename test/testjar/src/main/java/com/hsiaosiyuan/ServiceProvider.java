@@ -4,7 +4,7 @@ import org.apache.http.message.BasicHeader;
 
 import java.util.*;
 
-public interface ServiceProvider1 {
+public interface ServiceProvider {
 
   ArrayList<User> users = new ArrayList<User>();
 
