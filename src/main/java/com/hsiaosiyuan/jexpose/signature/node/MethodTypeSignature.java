@@ -44,4 +44,9 @@ public class MethodTypeSignature extends Node {
     refs.addAll(ret.getDirectRefClasses());
     return refs;
   }
+
+  @Override
+  protected Node clone() throws CloneNotSupportedException {
+    throw new CloneNotSupportedException();
+  }
 }

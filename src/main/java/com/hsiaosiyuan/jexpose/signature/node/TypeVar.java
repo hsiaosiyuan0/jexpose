@@ -18,4 +18,9 @@ public class TypeVar extends FieldTypeSignature {
   public HashSet<String> getDirectRefClasses() {
     return new HashSet<>();
   }
+
+  @Override
+  protected Node clone() throws CloneNotSupportedException {
+    return new TypeVar(name);
+  }
 }

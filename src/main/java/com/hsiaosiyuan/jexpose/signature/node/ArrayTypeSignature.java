@@ -15,4 +15,11 @@ public class ArrayTypeSignature extends FieldTypeSignature {
   public HashSet<String> getDirectRefClasses() {
     return elementType.getDirectRefClasses();
   }
+
+  @Override
+  protected Node clone() throws CloneNotSupportedException {
+    ArrayTypeSignature node = new ArrayTypeSignature();
+    node.elementType = (TypeSignature) elementType.clone();
+    return node;
+  }
 }

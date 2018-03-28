@@ -24,6 +24,11 @@ public class Primitive extends TypeSignature {
     return new HashSet<>();
   }
 
+  @Override
+  protected Node clone() throws CloneNotSupportedException {
+    return new Primitive(binaryName);
+  }
+
   @JSONField(name = "name")
   public String getName() {
     return binaryName.replace("/", ".");

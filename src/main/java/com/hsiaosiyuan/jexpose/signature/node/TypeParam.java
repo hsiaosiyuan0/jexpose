@@ -28,4 +28,14 @@ public class TypeParam extends Node {
     }
     return refs;
   }
+
+  @Override
+  protected Node clone() throws CloneNotSupportedException {
+    TypeParam node = new TypeParam();
+    node.name = name;
+    for (TypeSignature t : types) {
+      node.types.add((FieldTypeSignature) t.clone());
+    }
+    return node;
+  }
 }

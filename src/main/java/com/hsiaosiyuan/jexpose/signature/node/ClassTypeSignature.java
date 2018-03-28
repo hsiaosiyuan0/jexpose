@@ -2,6 +2,7 @@ package com.hsiaosiyuan.jexpose.signature.node;
 
 import com.alibaba.fastjson.annotation.JSONField;
 
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.LinkedList;
 
@@ -9,6 +10,8 @@ public class ClassTypeSignature extends FieldTypeSignature {
   @JSONField(serialize = false)
   public String binaryName;
   public LinkedList<TypeArg> typeArgs;
+
+  @JSONField(serialize = false)
   public LinkedList<Sub> subTypes;
 
   public ClassTypeSignature() {
@@ -19,10 +22,6 @@ public class ClassTypeSignature extends FieldTypeSignature {
   @JSONField(name = "name")
   public String getName() {
     return binaryName.replace("/", ".");
-  }
-
-  public boolean hasTypeArgs() {
-    return typeArgs.size() > 0;
   }
 
   public static class Sub extends Node {
@@ -50,6 +49,16 @@ public class ClassTypeSignature extends FieldTypeSignature {
       }
       return refs;
     }
+
+    @Override
+    protected Node clone() throws CloneNotSupportedException {
+      Sub s = new Sub();
+      s.name = name;
+      for (TypeArg ta : typeArgs) {
+        s.typeArgs.add((TypeArg) ta.clone());
+      }
+      return s;
+    }
   }
 
   @Override
@@ -76,5 +85,29 @@ public class ClassTypeSignature extends FieldTypeSignature {
       refs.addAll(s.getDirectRefClasses());
     }
     return refs;
+  }
+
+  @Override
+  protected Node clone() throws CloneNotSupportedException {
+    ClassTypeSignature cs = new ClassTypeSignature();
+    cs.binaryName = binaryName;
+    for (TypeArg ta : typeArgs) {
+      cs.typeArgs.add((TypeArg) ta.clone());
+    }
+    for (Sub s : subTypes) {
+      cs.subTypes.add((Sub) s.clone());
+    }
+    return cs;
+  }
+
+  @JSONField(serialize = false)
+  public ArrayList<String> getTypeArgNames() {
+    ArrayList<String> ret = new ArrayList<>();
+    for (TypeArg arg : typeArgs) {
+      if (arg.type.isTypeVar()) {
+        ret.add(arg.type.asTypeVar().name);
+      }
+    }
+    return ret;
   }
 }

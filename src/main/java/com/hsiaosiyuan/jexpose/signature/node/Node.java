@@ -61,4 +61,6 @@ public abstract class Node {
 
   @JSONField(serialize = false)
   public abstract HashSet<String> getDirectRefClasses();
+
+  protected abstract Node clone() throws CloneNotSupportedException;
 }

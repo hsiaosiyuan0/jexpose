@@ -142,7 +142,7 @@ public class ProvidersDeflator {
 
     int feature = JSON.DEFAULT_GENERATE_FEATURE |= SerializerFeature.DisableCircularReferenceDetect.getMask();
     feature |= SerializerFeature.PrettyFormat.getMask();
-    writeJson2file(JSON.toJSONString(result, feature));
+    writeJson2file(JSON.toJSONString(result, feature).replace("\t","  "));
   }
 
   private static void writeJson2file(String json) throws IOException {

@@ -14,6 +14,9 @@ public class ClassSignature extends Node {
   public ArrayList<TypeParam> typeParams;
 
   @JSONField(serialize = false)
+  public ArrayList<TypeParam> appliedTypeParams;
+
+  @JSONField(serialize = false)
   public ArrayList<ClassTypeSignature> superClasses;
 
   public boolean isInterface;
@@ -65,13 +68,21 @@ public class ClassSignature extends Node {
         refs.addAll(ts.getDirectRefClasses());
       }
     }
-    for (TypeSignature ts : getFinalFields().values()) {
-      refs.addAll(ts.getDirectRefClasses());
+    try {
+      for (TypeSignature ts : getFinalFields().values()) {
+        refs.addAll(ts.getDirectRefClasses());
+      }
+    } catch (CloneNotSupportedException ignored) {
     }
     for (MethodTypeSignature ms : methods.values()) {
       refs.addAll(ms.getDirectRefClasses());
     }
     return refs;
+  }
+
+  @Override
+  protected Node clone() throws CloneNotSupportedException {
+    throw new CloneNotSupportedException();
   }
 
   public ClassTypeSignature toClassTypeSignature() {
@@ -92,19 +103,41 @@ public class ClassSignature extends Node {
   }
 
   @JSONField(name = "fields")
-  public HashMap<String, TypeSignature> getFinalFields() {
+  public HashMap<String, TypeSignature> getFinalFields() throws CloneNotSupportedException {
     HashMap<String, ClassSignature> classPool = ClassResolver.getClassPool();
     HashMap<String, TypeSignature> fields = new HashMap<>();
-    Stack<ClassTypeSignature> superClassesStack = new Stack<>();
+    ArrayList<ClassTypeSignature> superClasses = new ArrayList<>();
     ClassTypeSignature sct = getSuperClass();
     while (sct != null) {
-      superClassesStack.push(sct);
+      superClasses.add(sct);
       sct = classPool.get(sct.binaryName).getSuperClass();
     }
-    while (!superClassesStack.empty()) {
-      ClassTypeSignature cs = superClassesStack.pop();
-      fields.putAll(classPool.get(cs.binaryName).fields);
+
+    ArrayList<TypeParam> childTypeParams = typeParams;
+    ArrayList<TypeParam> childAppliedTypeParams = typeParams;
+    for (ClassTypeSignature sp : superClasses) {
+      ArrayList<String> spTypArgNames = sp.getTypeArgNames();
+      ArrayList<TypeParam> childTPSMatched = new ArrayList<>();
+      for (String sn : spTypArgNames) {
+        for (TypeParam ctp : childTypeParams) {
+          if (ctp.name.equals(sn)) {
+            int idx = getTypeParamIndex(childTypeParams, sn);
+            try {
+              TypeParam tp = childAppliedTypeParams.get(idx);
+              childTPSMatched.add(tp);
+            } catch (Exception ignored) {
+            }
+          }
+        }
+      }
+
+      ClassSignature spc = ClassResolver.getClassPool().get(sp.binaryName);
+      HashMap<String, TypeSignature> appliedFields = spc.applyChildTypeParams(childTPSMatched);
+      fields.putAll(appliedFields);
+      childTypeParams = spc.typeParams;
+      childAppliedTypeParams = spc.appliedTypeParams;
     }
+
     fields.putAll(this.fields);
     if (isEnum)
       return (HashMap<String, TypeSignature>) fields.entrySet().stream()
@@ -136,5 +169,53 @@ public class ClassSignature extends Node {
       noInternal.put(key, value);
     }
     return noInternal;
+  }
+
+  @JSONField(serialize = false)
+  public static int getTypeParamIndex(ArrayList<TypeParam> params, String name) {
+    for (int i = 0; i < params.size(); ++i) {
+      if (params.get(i).name.equals(name)) return i;
+    }
+    return -1;
+  }
+
+  public HashMap<String, TypeSignature> copyFields() throws CloneNotSupportedException {
+    HashMap<String, TypeSignature> ret = new HashMap<>();
+    for (Map.Entry<String, TypeSignature> entry : fields.entrySet()) {
+      ret.put(entry.getKey(), (TypeSignature) entry.getValue().clone());
+    }
+    return ret;
+  }
+
+  public HashMap<String, TypeSignature> applyChildTypeParams(ArrayList<TypeParam> childTps) throws CloneNotSupportedException {
+    appliedTypeParams = new ArrayList<>();
+    HashMap<String, TypeSignature> fields = copyFields();
+    for (Map.Entry<String, TypeSignature> entry : fields.entrySet()) {
+      String key = entry.getKey();
+      TypeSignature val = entry.getValue();
+      if (!val.isTypeVar()) continue;
+
+      int idx = getTypeParamIndex(typeParams, val.asTypeVar().name);
+      TypeParam tp;
+      try {
+        tp = childTps.get(idx);
+      } catch (Exception e) {
+        tp = null;
+      }
+      if (tp != null) {
+        val.asTypeVar().name = tp.name;
+        continue;
+      }
+
+      fields.put(key, typeParams.get(idx).types.get(0));
+    }
+    appliedTypeParams.addAll(childTps);
+    return fields;
+  }
+
+  @JSONField(name = "typeParams")
+  public ArrayList<TypeParam> getFinalTypeParams() {
+
+    return typeParams;
   }
 }
