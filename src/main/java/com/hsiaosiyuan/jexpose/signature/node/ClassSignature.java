@@ -139,7 +139,7 @@ public class ClassSignature extends Node {
       childAppliedTypeParams = spc.appliedTypeParams;
     }
 
-    for (int i = superFields.size() - 1; i > 0; --i) {
+    for (int i = superFields.size() - 1; i >= 0; --i) {
       fields.putAll(superFields.get(i));
     }
 

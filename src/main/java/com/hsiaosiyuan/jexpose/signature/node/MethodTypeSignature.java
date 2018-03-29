@@ -10,6 +10,8 @@ public class MethodTypeSignature extends Node {
   public ArrayList<TypeSignature> params;
   public TypeSignature ret;
 
+  public ArrayList<String> formalParams;
+
   public boolean isOverride;
 
   @JSONField(serialize = false)
@@ -19,6 +21,7 @@ public class MethodTypeSignature extends Node {
     typeParams = new ArrayList<>();
     params = new ArrayList<>();
     exceptions = new ArrayList<>();
+    formalParams = new ArrayList<>();
   }
 
   @Override

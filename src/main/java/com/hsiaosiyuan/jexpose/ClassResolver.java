@@ -110,7 +110,13 @@ public class ClassResolver extends ClassVisitor {
   public MethodVisitor visitMethod(int access, String name, String descriptor, String signature, String[] exceptions) {
     MethodTypeSignature ts = new Parser(signature != null ? signature : descriptor).parseMethodTypeSignature();
     clazz.addMethod(name, ts);
-    return super.visitMethod(access, name, descriptor, signature, exceptions);
+    super.visitMethod(access, name, descriptor, signature, exceptions);
+    return new MethodVisitor(Opcodes.ASM6) {
+      @Override
+      public void visitParameter(String name, int access) {
+        ts.formalParams.add(name);
+      }
+    };
   }
 
   @Override
