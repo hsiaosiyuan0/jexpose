@@ -3,6 +3,7 @@ package com.hsiaosiyuan.jexpose;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.serializer.SerializerFeature;
 import com.hsiaosiyuan.jexpose.signature.node.ClassSignature;
+import com.hsiaosiyuan.jexpose.signature.node.TypeSignature;
 import net.lingala.zip4j.core.ZipFile;
 import net.lingala.zip4j.exception.ZipException;
 import org.apache.commons.io.FilenameUtils;
@@ -16,7 +17,9 @@ import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Map;
 import java.util.concurrent.ExecutionException;
+import java.util.stream.Collectors;
 
 public class ProvidersDeflator {
   private String entryName;
@@ -118,31 +121,15 @@ public class ProvidersDeflator {
     ArrayList<String> providers = new ArrayList<>(resolvedProviders.keySet());
     HashMap<String, ClassSignature> classPool = ClassResolver.getClassPoolWithoutBuiltin();
 
-    HashSet<String> directRefs = new HashSet<>(providers);
-    for (String p : providers) {
-      ClassSignature cs = classPool.get(p.replace(".", "/"));
-      HashSet<String> refs = cs.getDirectRefClasses();
-      for (String r : refs) {
-        ClassSignature c = classPool.get(r);
-        if (c == null) continue;
-        directRefs.addAll(c.getDirectRefClasses());
-      }
-      directRefs.addAll(refs);
-    }
-
-    HashMap<String, ClassSignature> res = new HashMap<>();
-    for (String r : directRefs) {
-      ClassSignature cs = classPool.get(r.replace(".", "/"));
-      if (cs != null) res.put(cs.getName(), cs);
-    }
-
     Result result = new Result();
     result.providers = providers;
-    result.classes = res;
+    result.classes = (HashMap<String, ClassSignature>) classPool.entrySet().stream()
+      .filter(item -> !item.getKey().equals("$VALUES"))
+      .collect(Collectors.toMap(p -> p.getKey().replace("/", "."), Map.Entry::getValue));
 
     int feature = JSON.DEFAULT_GENERATE_FEATURE |= SerializerFeature.DisableCircularReferenceDetect.getMask();
     feature |= SerializerFeature.PrettyFormat.getMask();
-    writeJson2file(JSON.toJSONString(result, feature).replace("\t","  "));
+    writeJson2file(JSON.toJSONString(result, feature).replace("\t", "  "));
   }
 
   private static void writeJson2file(String json) throws IOException {

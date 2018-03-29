@@ -168,7 +168,7 @@ public class ClassSignature extends Node {
     for (Map.Entry<String, MethodTypeSignature> entry : methods.entrySet()) {
       String key = entry.getKey();
       MethodTypeSignature value = entry.getValue();
-      if (key.equals("<init>") || key.equals("<clinit>")) {
+      if (key.startsWith("<init>") || key.startsWith("<clinit>")) {
         continue;
       }
       noInternal.put(key, value);
