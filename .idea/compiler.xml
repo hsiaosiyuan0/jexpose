@@ -6,11 +6,12 @@
         <sourceOutputDir name="target/generated-sources/annotations" />
         <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
         <outputRelativeToContentRoot value="true" />
-        <module name="jexpose" />
+        <module name="testjar" />
       </profile>
     </annotationProcessing>
     <bytecodeTargetLevel>
       <module name="jexpose" target="9" />
+      <module name="testjar" target="9" />
     </bytecodeTargetLevel>
   </component>
 </project>

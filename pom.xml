@@ -17,7 +17,10 @@
       </plugin>
     </plugins>
   </build>
-  <packaging>jar</packaging>
+  <modules>
+    <module>testjar</module>
+  </modules>
+  <packaging>pom</packaging>
 
   <name>jexpose</name>
   <url>http://maven.apache.org</url>

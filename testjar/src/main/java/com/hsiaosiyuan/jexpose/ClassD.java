@@ -1,4 +1,4 @@
-package com.hsiaosiyuan;
+package com.hsiaosiyuan.jexpose;
 
 public class ClassD {
   String fieldD;

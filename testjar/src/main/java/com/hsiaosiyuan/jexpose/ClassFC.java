@@ -1,4 +1,4 @@
-package com.hsiaosiyuan;
+package com.hsiaosiyuan.jexpose;
 
 public class ClassFC<TC1 extends ClassD, TC2> {
   TC1 fieldTC1;
