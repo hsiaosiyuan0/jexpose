@@ -1,4 +1,6 @@
 package com.hsiaosiyuan;
 
-public class ClassF extends ClassB {
+import java.util.*;
+
+public class ClassF extends Date {
 }

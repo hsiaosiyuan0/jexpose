@@ -1,5 +1,6 @@
 package com.hsiaosiyuan.jexpose.signature.node;
 
+import java.util.HashMap;
 import java.util.HashSet;
 
 public class ArrayTypeSignature extends FieldTypeSignature {
@@ -21,5 +22,10 @@ public class ArrayTypeSignature extends FieldTypeSignature {
     ArrayTypeSignature node = new ArrayTypeSignature();
     node.elementType = (TypeSignature) elementType.clone();
     return node;
+  }
+
+  @Override
+  void applyTypeArgs(HashMap<String, TypeArg> args) {
+    elementType.applyTypeArgs(args);
   }
 }

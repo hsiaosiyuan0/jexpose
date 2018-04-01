@@ -3,6 +3,7 @@ package com.hsiaosiyuan.jexpose.signature.node;
 import com.alibaba.fastjson.annotation.JSONField;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
 
@@ -109,5 +110,17 @@ public class ClassTypeSignature extends FieldTypeSignature {
       }
     }
     return ret;
+  }
+
+  @Override
+  void applyTypeArgs(HashMap<String, TypeArg> args) {
+    for (int i = 0; i < typeArgs.size(); ++i) {
+      TypeArg a = typeArgs.get(i);
+      if (a.type.isTypeVar()) {
+        typeArgs.set(i, args.get(a.type.asTypeVar().name));
+      } else {
+        a.type.applyTypeArgs(args);
+      }
+    }
   }
 }

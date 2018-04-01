@@ -1,5 +1,7 @@
 package com.hsiaosiyuan;
 
-public class ClassE extends ClassD {
+import java.util.Date;
+
+public class ClassE<T extends Date> extends ClassB<ClassD, T> {
   String fieldE;
 }

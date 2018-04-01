@@ -2,6 +2,7 @@ package com.hsiaosiyuan.jexpose.signature.node;
 
 import com.alibaba.fastjson.annotation.JSONField;
 
+import java.util.HashMap;
 import java.util.HashSet;
 
 public class Primitive extends TypeSignature {
@@ -32,5 +33,9 @@ public class Primitive extends TypeSignature {
   @JSONField(name = "name")
   public String getName() {
     return binaryName.replace("/", ".");
+  }
+
+  @Override
+  void applyTypeArgs(HashMap<String, TypeArg> args) {
   }
 }

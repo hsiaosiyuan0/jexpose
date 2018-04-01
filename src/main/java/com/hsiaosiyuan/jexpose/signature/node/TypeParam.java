@@ -38,4 +38,10 @@ public class TypeParam extends Node {
     }
     return node;
   }
+
+  public TypeArg toTypeArg() {
+    TypeArg ta = new TypeArg();
+    ta.type = new TypeVar(name);
+    return ta;
+  }
 }
