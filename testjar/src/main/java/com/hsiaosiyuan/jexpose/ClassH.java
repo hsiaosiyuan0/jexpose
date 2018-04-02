@@ -1,4 +1,4 @@
 package com.hsiaosiyuan.jexpose;
 
-public class ClassH extends ClassB {
+public class ClassH extends ClassI {
 }
