@@ -10,4 +10,6 @@ public interface GenericProvider {
   void m3(ClassF a);
 
   int m4(ClassE a);
+
+  void m5(ClassH a);
 }

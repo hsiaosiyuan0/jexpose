@@ -203,10 +203,12 @@ public class ClassSignature extends Node {
   public HashMap<String, TypeSignature> applyTypeArgs(ArrayList<TypeArg> args) throws CloneNotSupportedException {
     appliedTypeArgs = new ArrayList<>();
     HashMap<String, TypeSignature> fields = copyFields();
-    HashMap<String, TypeArg> namedArgs = new HashMap<>();
+    LinkedHashMap<String, TypeArg> namedArgs = new LinkedHashMap<>();
     if (args.size() == 0) {
       for (TypeParam tp : typeParams) {
-        namedArgs.put(tp.name, tp.toTypeArg());
+        TypeArg ta = new TypeArg();
+        ta.type = tp.types.get(0);
+        namedArgs.put(tp.name, ta);
       }
     } else {
       for (int i = 0; i < typeParams.size(); ++i) {
@@ -222,7 +224,7 @@ public class ClassSignature extends Node {
         val.applyTypeArgs(namedArgs);
       }
     }
-    appliedTypeArgs.addAll(args);
+    appliedTypeArgs.addAll(namedArgs.values());
     return fields;
   }
 
