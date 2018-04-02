@@ -2,7 +2,12 @@ package com.hsiaosiyuan.jexpose.signature.node;
 
 import com.alibaba.fastjson.annotation.JSONField;
 import com.hsiaosiyuan.jexpose.ClassResolver;
+import com.hsiaosiyuan.jexpose.signature.Parser;
+import org.objectweb.asm.ClassReader;
+import org.objectweb.asm.tree.*;
 
+import java.io.FileNotFoundException;
+import java.lang.invoke.MethodHandle;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -24,7 +29,14 @@ public class ClassSignature extends Node {
   public boolean isEnum;
 
   @JSONField(serialize = false)
+  public String jar;
+  @JSONField(serialize = false)
+  public String jrt;
+
+  @JSONField(serialize = false)
   public HashMap<String, TypeSignature> fields;
+
+  public ArrayList<Object> values;
 
   @JSONField(serialize = false)
   public HashMap<String, MethodTypeSignature> methods;
@@ -33,6 +45,7 @@ public class ClassSignature extends Node {
     typeParams = new ArrayList<>();
     superClasses = new ArrayList<>();
     fields = new HashMap<>();
+    values = new ArrayList<>();
     methods = new HashMap<>();
   }
 
@@ -72,7 +85,7 @@ public class ClassSignature extends Node {
       for (TypeSignature ts : getFinalFields().values()) {
         refs.addAll(ts.getDirectRefClasses());
       }
-    } catch (CloneNotSupportedException ignored) {
+    } catch (Exception ignored) {
     }
     for (MethodTypeSignature ms : methods.values()) {
       refs.addAll(ms.getDirectRefClasses());
@@ -111,7 +124,7 @@ public class ClassSignature extends Node {
   }
 
   @JSONField(name = "fields")
-  public HashMap<String, TypeSignature> getFinalFields() throws CloneNotSupportedException {
+  public HashMap<String, TypeSignature> getFinalFields() throws Exception {
     HashMap<String, ClassSignature> classPool = ClassResolver.getClassPool();
     HashMap<String, TypeSignature> fields = new HashMap<>();
     ArrayList<ClassTypeSignature> superClasses = new ArrayList<>();
@@ -152,10 +165,13 @@ public class ClassSignature extends Node {
     }
 
     fields.putAll(this.fields);
-    if (isEnum)
-      return (HashMap<String, TypeSignature>) fields.entrySet().stream()
+    if (isEnum) {
+      fields = (HashMap<String, TypeSignature>) fields.entrySet().stream()
         .filter(item -> !item.getKey().equals("$VALUES"))
         .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
+      extractEnumValues();
+      return fields;
+    }
 
     HashMap<String, TypeSignature> noStatic = new HashMap<>();
     for (Map.Entry<String, TypeSignature> entry : fields.entrySet()) {
@@ -251,5 +267,111 @@ public class ClassSignature extends Node {
     method.isOverride = true;
     name = genUniqueMethodName(name);
     methods.put(name, method);
+  }
+
+  public void extractEnumValues() throws Exception {
+    byte[] raw = ClassResolver.loadClazzBytes(jar, jrt, binaryName);
+    ClassNode node = new ClassNode();
+    new ClassReader(raw).accept(node, ClassReader.SKIP_DEBUG);
+
+    @SuppressWarnings("unchecked") final List<MethodNode> methods = node.methods;
+    MethodNode clinit = null;
+    MethodNode init = null;
+    for (MethodNode m : methods) {
+      if (m.name.equals("<clinit>")) {
+        clinit = m;
+      } else if (m.name.equals("<init>")) {
+        init = m;
+      }
+      if (clinit != null && init != null) break;
+    }
+    if (clinit == null || init == null) return;
+
+    MethodTypeSignature mts = new Parser(init.signature).parseMethodTypeSignature();
+    if (mts.params.size() == 0) return;
+
+    if (mts.params.size() > 1) {
+      System.out.println("too many params of enum constructor, max is 1, skipped: " + binaryName);
+      return;
+    }
+
+    TypeSignature p0 = mts.params.get(0);
+    boolean ok = false;
+    if (p0.isClassType()) {
+      ok = p0.asClassType().binaryName.equals("java/lang/String");
+    } else if (p0.isPrimitive()) {
+      ok = p0.asPrimitive().binaryName.equals("java/lang/Integer")
+        || p0.asPrimitive().binaryName.equals("java/lang/Long")
+        || p0.asPrimitive().binaryName.equals("java/lang/Short");
+    }
+
+    if (!ok) {
+      System.out.println("unsupported type of enum constructor: " + p0);
+      return;
+    }
+
+    for (int i = 0; i < clinit.instructions.size(); i++) {
+      if (clinit.instructions.get(i).getOpcode() == 187) {
+        // 0 new #4 <com/hsiaosiyuan/jexpose/EnumB>
+        // 3 dup
+        // 4 ldc #8 <B1>
+        // 6 iconst_0
+        // 7 ldc #9 <1>
+        // 9 invokespecial #10 <com/hsiaosiyuan/jexpose/EnumB.<init>>
+        i += 4;
+        AbstractInsnNode insnNode = clinit.instructions.get(i);
+        if (insnNode.getType() == AbstractInsnNode.LDC_INSN) {
+          values.add(((LdcInsnNode) insnNode).cst);
+          continue;
+        }
+        if (insnNode.getType() == AbstractInsnNode.INSN) {
+          switch (insnNode.getOpcode()) {
+            case 0x2: {
+              values.add(-1);
+              break;
+            }
+            case 0x3: {
+              values.add(0);
+              break;
+            }
+            case 0x4: {
+              values.add(1);
+              break;
+            }
+            case 0x5: {
+              values.add(2);
+              break;
+            }
+            case 0x6: {
+              values.add(3);
+              break;
+            }
+            case 0x7: {
+              values.add(4);
+              break;
+            }
+            case 0x8: {
+              values.add(5);
+              break;
+            }
+            case 0x9: {
+              values.add(0);
+              break;
+            }
+            case 0xa: {
+              values.add(1);
+              break;
+            }
+            default: {
+              throw new Exception("unsupported opcode: " + insnNode.getOpcode());
+            }
+          }
+          continue;
+        }
+        if (insnNode.getType() == AbstractInsnNode.INT_INSN) {
+          values.add(((IntInsnNode) insnNode).operand);
+        }
+      }
+    }
   }
 }

@@ -46,19 +46,21 @@ public class ClassResolver extends ClassVisitor {
     // doing this to minify the size of classPool
     if (isBuiltin(binaryName)) {
       clazz = new ClassSignature();
+      clazz.jar = jar;
+      clazz.jrt = jrt;
       clazz.binaryName = binaryName;
       classPool.put(binaryName, clazz);
       return CompletableFuture.completedFuture(clazz);
     }
 
-    byte[] raw = loadClazzBytes(binaryName);
+    byte[] raw = loadClazzBytes(jar, jrt, binaryName);
     result = new CompletableFuture<>();
 
     new ClassReader(raw).accept(this, ClassReader.SKIP_DEBUG);
     return result;
   }
 
-  private byte[] loadClazzBytes(String binaryName) throws FileNotFoundException {
+  public static byte[] loadClazzBytes(String jar, String jrt, String binaryName) throws FileNotFoundException {
     String f = binaryName + ".class";
     try {
       Path path = Paths.get(jar, f);
@@ -95,6 +97,8 @@ public class ClassResolver extends ClassVisitor {
     clazz.isInterface = (access & Opcodes.ACC_INTERFACE) != 0;
     clazz.isEnum = (access & Opcodes.ACC_ENUM) != 0;
 
+    clazz.jar = jar;
+    clazz.jrt = jrt;
     classPool.put(clazz.binaryName, clazz);
   }
 
