@@ -6,8 +6,6 @@ import com.hsiaosiyuan.jexpose.signature.Parser;
 import org.objectweb.asm.ClassReader;
 import org.objectweb.asm.tree.*;
 
-import java.io.FileNotFoundException;
-import java.lang.invoke.MethodHandle;
 import java.util.*;
 import java.util.stream.Collectors;
 
