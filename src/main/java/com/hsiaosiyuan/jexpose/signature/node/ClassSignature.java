@@ -2,6 +2,7 @@ package com.hsiaosiyuan.jexpose.signature.node;
 
 import com.alibaba.fastjson.annotation.JSONField;
 import com.hsiaosiyuan.jexpose.ClassResolver;
+import com.hsiaosiyuan.jexpose.Colorize;
 import com.hsiaosiyuan.jexpose.signature.Parser;
 import org.objectweb.asm.ClassReader;
 import org.objectweb.asm.tree.*;
@@ -289,22 +290,26 @@ public class ClassSignature extends Node {
     if (mts.params.size() == 0) return;
 
     if (mts.params.size() > 1) {
-      System.out.println("too many params of enum constructor, max is 1, skipped: " + binaryName);
-      return;
+      System.out.println(Colorize.warn("too many params of enum constructor, except 1, got " + mts.params.size() + ", exceeded will be skipped: " + binaryName));
     }
 
     TypeSignature p0 = mts.params.get(0);
     boolean ok = false;
     if (p0.isClassType()) {
-      ok = p0.asClassType().binaryName.equals("java/lang/String");
+      String bn = p0.asClassType().binaryName;
+      ok = bn.equals("java/lang/String")
+        || bn.equals("java/lang/Integer")
+        || bn.equals("java/lang/Long")
+        || bn.equals("java/lang/Short");
     } else if (p0.isPrimitive()) {
-      ok = p0.asPrimitive().binaryName.equals("java/lang/Integer")
-        || p0.asPrimitive().binaryName.equals("java/lang/Long")
-        || p0.asPrimitive().binaryName.equals("java/lang/Short");
+      String bn = p0.asPrimitive().binaryName;
+      ok = bn.equals("java/lang/Integer")
+        || bn.equals("java/lang/Long")
+        || bn.equals("java/lang/Short");
     }
 
     if (!ok) {
-      System.out.println("unsupported type of enum constructor: " + p0);
+      System.out.println(Colorize.error("unsupported type of first parameter of enum constructor: " + binaryName));
       return;
     }
 

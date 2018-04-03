@@ -10,8 +10,8 @@
       </profile>
     </annotationProcessing>
     <bytecodeTargetLevel>
-      <module name="jexpose" target="9" />
-      <module name="testjar" target="9" />
+      <module name="jexpose" target="8" />
+      <module name="testjar" target="8" />
     </bytecodeTargetLevel>
   </component>
 </project>

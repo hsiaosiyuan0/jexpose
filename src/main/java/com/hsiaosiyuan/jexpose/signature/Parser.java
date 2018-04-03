@@ -4,18 +4,21 @@ import com.hsiaosiyuan.jexpose.signature.node.*;
 import com.hsiaosiyuan.jexpose.signature.node.ClassTypeSignature.Sub;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.LinkedList;
-import java.util.Map;
-
-import static java.util.Map.entry;
 
 public class Parser {
-  private static final Map<String, String> primitives = Map.ofEntries(
-    entry("B", "java/lang/Byte"), entry("C", "java/lang/Character"),
-    entry("D", "java/lang/Double"), entry("F", "java/lang/Float"),
-    entry("I", "java/lang/Integer"), entry("J", "java/lang/Long"),
-    entry("S", "java/lang/Short"), entry("Z", "java/lang/Boolean"),
-    entry("V", "java/lang/Void"));
+  private static final HashMap<String, String> primitives = new HashMap<String, String>() {{
+    put("B", "java/lang/Byte");
+    put("C", "java/lang/Character");
+    put("D", "java/lang/Double");
+    put("F", "java/lang/Float");
+    put("I", "java/lang/Integer");
+    put("J", "java/lang/Long");
+    put("S", "java/lang/Short");
+    put("Z", "java/lang/Boolean");
+    put("V", "java/lang/Void");
+  }};
 
   private static final int EOF = -1;
 

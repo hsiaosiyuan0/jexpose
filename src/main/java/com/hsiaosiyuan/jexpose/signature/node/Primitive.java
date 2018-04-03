@@ -15,7 +15,7 @@ public class Primitive extends TypeSignature {
 
   @Override
   public HashSet<String> collectRefClasses() {
-    return new HashSet<>() {{
+    return new HashSet<String>() {{
       add(binaryName);
     }};
   }

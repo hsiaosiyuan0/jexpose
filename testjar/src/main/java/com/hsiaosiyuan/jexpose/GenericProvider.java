@@ -20,4 +20,6 @@ public interface GenericProvider {
   void m8(EnumC a);
 
   void m9(EnumD a);
+
+  void m10(EnumE a);
 }
