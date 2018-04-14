@@ -22,16 +22,14 @@ public class ClassResolver extends ClassVisitor {
 
   private static final HashMap<String, ClassSignature> classPool = new HashMap<>();
 
-  private String jrt;
   private String jar;
   private String binaryName;
 
   private ClassSignature clazz;
   private CompletableFuture<ClassSignature> result;
 
-  ClassResolver(String jrt, String jar, String name) {
+  ClassResolver(String jar, String name) {
     super(Opcodes.ASM6);
-    this.jrt = jrt;
     this.jar = jar;
     this.binaryName = name.replace(".", "/");
   }
@@ -47,28 +45,21 @@ public class ClassResolver extends ClassVisitor {
     if (isBuiltin(binaryName)) {
       clazz = new ClassSignature();
       clazz.jar = jar;
-      clazz.jrt = jrt;
       clazz.binaryName = binaryName;
       classPool.put(binaryName, clazz);
       return CompletableFuture.completedFuture(clazz);
     }
 
-    byte[] raw = loadClazzBytes(jar, jrt, binaryName);
+    byte[] raw = loadClazzBytes(jar, binaryName);
     result = new CompletableFuture<>();
 
     new ClassReader(raw).accept(this, ClassReader.SKIP_DEBUG);
     return result;
   }
 
-  public static byte[] loadClazzBytes(String jar, String jrt, String binaryName) throws FileNotFoundException {
+  public static byte[] loadClazzBytes(String jar, String binaryName) throws FileNotFoundException {
     String f = binaryName + ".class";
-    try {
-      Path path = Paths.get(jar, f);
-      return Files.readAllBytes(path);
-    } catch (IOException ignored) {
-    }
-
-    Path path = Paths.get(jrt, f);
+    Path path = Paths.get(jar, f);
     try {
       return Files.readAllBytes(path);
     } catch (IOException e) {
@@ -85,7 +76,7 @@ public class ClassResolver extends ClassVisitor {
     } else if (superName != null) {
       clazz = new ClassSignature();
       try {
-        ClassSignature n = new ClassResolver(jrt, jar, superName).resolve().get();
+        ClassSignature n = new ClassResolver(jar, superName).resolve().get();
         clazz.superClasses.add(n.toClassTypeSignature());
       } catch (InterruptedException | ExecutionException | IOException e) {
         e.printStackTrace();
@@ -98,7 +89,6 @@ public class ClassResolver extends ClassVisitor {
     clazz.isEnum = (access & Opcodes.ACC_ENUM) != 0;
 
     clazz.jar = jar;
-    clazz.jrt = jrt;
     classPool.put(clazz.binaryName, clazz);
   }
 
@@ -129,7 +119,7 @@ public class ClassResolver extends ClassVisitor {
     HashSet<String> refs = clazz.collectRefClasses();
     for (String ref : refs) {
       try {
-        new ClassResolver(jrt, jar, ref).resolve().get();
+        new ClassResolver(jar, ref).resolve().get();
       } catch (InterruptedException | ExecutionException | IOException e) {
         e.printStackTrace();
       }
@@ -156,6 +146,6 @@ public class ClassResolver extends ClassVisitor {
   }
 
   private static boolean isBuiltin(String binaryName) {
-    return binaryName.startsWith("java/") || binaryName.startsWith("sun/");
+    return RuntimeList.has(binaryName);
   }
 }

@@ -269,7 +269,7 @@ public class ClassSignature extends Node {
   }
 
   public void extractEnumValues() throws Exception {
-    byte[] raw = ClassResolver.loadClazzBytes(jar, jrt, binaryName);
+    byte[] raw = ClassResolver.loadClazzBytes(jar, binaryName);
     ClassNode node = new ClassNode();
     new ClassReader(raw).accept(node, ClassReader.SKIP_DEBUG);
 

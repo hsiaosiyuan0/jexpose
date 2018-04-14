@@ -23,7 +23,6 @@ public class ProvidersDeflator {
   private String entryName;
   private File entryJar;
   private File libDir;
-  private String jrt;
 
   private ArrayList<String> providerNames;
   private HashMap<String, ClassSignature> resolvedProviders;
@@ -32,9 +31,8 @@ public class ProvidersDeflator {
   private static File extractedDir;
   private static File outputDir;
 
-  public ProvidersDeflator(String entry, String entryJarPath, String libDirPath, String jrtPath) {
+  public ProvidersDeflator(String entry, String entryJarPath, String libDirPath) {
     entryName = entry;
-    jrt = jrtPath;
 
     File file = new File(entryJarPath);
     if (!file.isFile()) throw new IllegalArgumentException("malformed path of entry jar");
@@ -114,7 +112,7 @@ public class ProvidersDeflator {
 
   private void doResolve() throws IOException, ExecutionException, InterruptedException {
     for (String pn : providerNames) {
-      ClassSignature cs = new ClassResolver(jrt, extractedDir.getAbsolutePath(), pn).resolve().get();
+      ClassSignature cs = new ClassResolver(extractedDir.getAbsolutePath(), pn).resolve().get();
       resolvedProviders.put(pn, cs);
     }
   }
