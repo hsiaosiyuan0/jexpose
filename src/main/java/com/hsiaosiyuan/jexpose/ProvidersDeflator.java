@@ -3,7 +3,6 @@ package com.hsiaosiyuan.jexpose;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.serializer.SerializerFeature;
 import com.hsiaosiyuan.jexpose.signature.node.ClassSignature;
-import com.hsiaosiyuan.jexpose.signature.node.TypeSignature;
 import net.lingala.zip4j.core.ZipFile;
 import net.lingala.zip4j.exception.ZipException;
 import org.apache.commons.io.FilenameUtils;
@@ -16,7 +15,6 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Map;
 import java.util.concurrent.ExecutionException;
 import java.util.stream.Collectors;
@@ -83,8 +81,12 @@ public class ProvidersDeflator {
     ArrayList<File> jars = scanJarDir(libDir);
     jars.add(entryJar);
     for (File j : jars) {
-      ZipFile zipFile = new ZipFile(j);
-      zipFile.extractAll(extractedDir.getAbsolutePath());
+      ZipFile zipFile = new ZipFile(j.getAbsolutePath());
+      try {
+        zipFile.extractAll(extractedDir.getAbsolutePath());
+      } catch (ZipException e) {
+        System.out.println(Colorize.error("ZipException:" + e.getMessage()));
+      }
     }
   }
 

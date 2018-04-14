@@ -329,6 +329,10 @@ public class ClassSignature extends Node {
         }
         if (insnNode.getType() == AbstractInsnNode.INSN) {
           switch (insnNode.getOpcode()) {
+            case 0x1: {
+              values.add(0);
+              break;
+            }
             case 0x2: {
               values.add(-1);
               break;

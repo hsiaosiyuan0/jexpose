@@ -33,7 +33,8 @@ public class TypeArg extends Node {
     TypeArg node = new TypeArg();
     node.isWildcard = isWildcard;
     node.prefix = prefix;
-    node.type = (FieldTypeSignature) type.clone();
+    if (node.type != null)
+      node.type = (FieldTypeSignature) type.clone();
     return node;
   }
 }

@@ -116,6 +116,7 @@ public class ClassTypeSignature extends FieldTypeSignature {
   void applyTypeArgs(HashMap<String, TypeArg> args) {
     for (int i = 0; i < typeArgs.size(); ++i) {
       TypeArg a = typeArgs.get(i);
+      if (a.type == null) return;
       if (a.type.isTypeVar()) {
         typeArgs.set(i, args.get(a.type.asTypeVar().name));
       } else {
