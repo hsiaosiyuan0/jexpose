@@ -286,7 +286,8 @@ public class ClassSignature extends Node {
     }
     if (clinit == null || init == null) return;
 
-    MethodTypeSignature mts = new Parser(init.signature).parseMethodTypeSignature();
+    String sig = init.signature != null ? init.signature : init.desc;
+    MethodTypeSignature mts = new Parser(sig).parseMethodTypeSignature();
     if (mts.params.size() == 0) return;
 
     if (mts.params.size() > 1) {
