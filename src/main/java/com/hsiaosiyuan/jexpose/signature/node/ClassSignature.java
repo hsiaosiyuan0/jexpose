@@ -25,6 +25,8 @@ public class ClassSignature extends Node {
 
   public boolean isInterface;
 
+  public boolean isAbstract;
+
   public boolean isEnum;
 
   @JSONField(serialize = false)
