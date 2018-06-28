@@ -23,6 +23,7 @@ public class ProvidersDeflator {
   private String entryName;
   private File entryJar;
   private File libDir;
+  private String providerSuffix;
 
   private ArrayList<String> providerNames;
   private HashMap<String, ClassSignature> resolvedProviders;
@@ -31,7 +32,8 @@ public class ProvidersDeflator {
   private static File extractedDir;
   private static File outputDir;
 
-  public ProvidersDeflator(String entry, String entryJarPath, String libDirPath) {
+  public ProvidersDeflator(String entry, String entryJarPath, String libDirPath, String providerSuffix) {
+    this.providerSuffix = providerSuffix;
     entryName = entry;
 
     File file = new File(entryJarPath);
@@ -101,7 +103,7 @@ public class ProvidersDeflator {
     for (File f : files) {
       if (f.isDirectory()) {
         ret.addAll(walkAndScanProviders(root, f));
-      } else if (FilenameUtils.getBaseName(f.getName()).endsWith("Provider")) {
+      } else if (FilenameUtils.getBaseName(f.getName()).endsWith(this.providerSuffix)) {
         String relativePath = f.getAbsolutePath().replace(root, "");
         String name = FilenameUtils.removeExtension(relativePath).replace(File.separator, ".");
         ret.add(entryName + name);
