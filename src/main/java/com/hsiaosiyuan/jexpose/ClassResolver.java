@@ -95,11 +95,12 @@ public class ClassResolver extends ClassVisitor {
 
   @Override
   public FieldVisitor visitField(int access, String name, String descriptor, String signature, Object value) {
-    if ((access & Opcodes.ACC_PRIVATE) != 0) return super.visitField(access, name, descriptor, signature, value);
-
     TypeSignature ts = new Parser(signature != null ? signature : descriptor).parseTypeSignature();
     ts.isStatic = (access & Opcodes.ACC_STATIC) != 0;
     clazz.fields.put(name, ts);
+    if ((access & Opcodes.ACC_PRIVATE) != 0) {
+      clazz.privateFields.add(name);
+    }
     return super.visitField(access, name, descriptor, signature, value);
   }
 

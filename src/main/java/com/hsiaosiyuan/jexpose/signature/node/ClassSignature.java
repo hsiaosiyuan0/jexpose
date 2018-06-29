@@ -42,10 +42,13 @@ public class ClassSignature extends Node {
   @JSONField(serialize = false)
   public HashMap<String, MethodTypeSignature> methods;
 
+  public ArrayList<String> privateFields;
+
   public ClassSignature() {
     typeParams = new ArrayList<>();
     superClasses = new ArrayList<>();
     fields = new HashMap<>();
+    privateFields = new ArrayList<>();
     values = new ArrayList<>();
     methods = new HashMap<>();
   }
@@ -159,6 +162,8 @@ public class ClassSignature extends Node {
       superFields.add(appliedFields);
       prevTypeParams = spc.typeParams;
       prevAppliedTypeArgs = spc.appliedTypeArgs;
+
+      privateFields.addAll(spc.privateFields);
     }
 
     for (int i = superFields.size() - 1; i >= 0; --i) {
