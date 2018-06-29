@@ -15,7 +15,7 @@ public class App {
     PrintStream out = new PrintStream(System.out, true, "UTF-8");
     System.setOut(out);
     long tb = System.currentTimeMillis();
-    String outDir = new ProvidersDeflator(args[0], args[1], args[2],args[3]).process();
+    String outDir = new ProvidersDeflator(args[0], args[1], args[2], args[3]).process();
     long te = System.currentTimeMillis();
     double elapsed = (te - tb) / 1000.0;
     System.out.println("Output at: " + outDir);
