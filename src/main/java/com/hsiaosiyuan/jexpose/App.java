@@ -24,7 +24,7 @@ public class App {
     CommandLine line = null;
     String providerSuffix = null;
     Pattern include = null;
-    Pattern exlcude = null;
+    Pattern exclude = null;
     try {
       line = parser.parse(options, args);
       if (!line.hasOption("entry")) {
@@ -48,7 +48,7 @@ public class App {
 
       String excludeStr = line.getOptionValue("exclude");
       if (excludeStr != null) {
-        exlcude = Pattern.compile(excludeStr);
+        exclude = Pattern.compile(excludeStr);
       }
     } catch (Exception e) {
       System.out.println(e.getMessage() + "\n");
@@ -67,7 +67,7 @@ public class App {
       line.getOptionValue("lib"),
       providerSuffix,
       include,
-      exlcude).process();
+      exclude).process();
 
     long te = System.currentTimeMillis();
     double elapsed = (te - tb) / 1000.0;
