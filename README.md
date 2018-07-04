@@ -1,7 +1,13 @@
 # jexpose
 
-This project can expose class graph inside of jar. It is designed to just exposing the matches class files, 
-and will merge fields inherit from ancestor classes.
+This project can expose class graph inside of jar. 
+
+It is designed to just exposing the matching class files, and will merge fields inherit from ancestor classes. 
+It does not using reflection but reading bytecode within class files, the reason of this strategy is the original language 
+planed to be used to write this project is typescript, used java temporarily since the asm package is ready to use. 
+
+After this [choc](https://github.com/hsiaosiyuan0/choc) was completed, the typescript version [jar-exposer](https://github.com/hsiaosiyuan0/jar-exposer) 
+is working in progress and maybe completed in future someday :-]
 
 ```
 jexpose -entry com.qianmi -entry-jar /w/qm/uc.jar -lib /w/qm/uc/dependencies -provider-suffix Provider -exclude ".*Score.*"
