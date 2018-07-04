@@ -19,4 +19,29 @@ public class TypeParam extends Node {
     }
     return refs;
   }
+
+  @Override
+  public HashSet<String> getDirectRefClasses() {
+    HashSet<String> refs = new HashSet<>();
+    for (FieldTypeSignature ts : types) {
+      refs.addAll(ts.getDirectRefClasses());
+    }
+    return refs;
+  }
+
+  @Override
+  protected Node clone() throws CloneNotSupportedException {
+    TypeParam node = new TypeParam();
+    node.name = name;
+    for (TypeSignature t : types) {
+      node.types.add((FieldTypeSignature) t.clone());
+    }
+    return node;
+  }
+
+  public TypeArg toTypeArg() {
+    TypeArg ta = new TypeArg();
+    ta.type = new TypeVar(name);
+    return ta;
+  }
 }

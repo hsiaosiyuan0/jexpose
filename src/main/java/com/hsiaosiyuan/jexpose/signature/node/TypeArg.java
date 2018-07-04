@@ -21,4 +21,20 @@ public class TypeArg extends Node {
     if (type == null) return new HashSet<>();
     return type.collectRefClasses();
   }
+
+  @Override
+  public HashSet<String> getDirectRefClasses() {
+    if (type == null) return new HashSet<>();
+    return type.getDirectRefClasses();
+  }
+
+  @Override
+  protected Node clone() throws CloneNotSupportedException {
+    TypeArg node = new TypeArg();
+    node.isWildcard = isWildcard;
+    node.prefix = prefix;
+    if (type != null)
+      node.type = (FieldTypeSignature) type.clone();
+    return node;
+  }
 }

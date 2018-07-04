@@ -13,6 +13,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
@@ -21,16 +22,14 @@ public class ClassResolver extends ClassVisitor {
 
   private static final HashMap<String, ClassSignature> classPool = new HashMap<>();
 
-  private String jrt;
   private String jar;
   private String binaryName;
 
   private ClassSignature clazz;
   private CompletableFuture<ClassSignature> result;
 
-  ClassResolver(String jrt, String jar, String name) {
+  ClassResolver(String jar, String name) {
     super(Opcodes.ASM6);
-    this.jrt = jrt;
     this.jar = jar;
     this.binaryName = name.replace(".", "/");
   }
@@ -45,27 +44,22 @@ public class ClassResolver extends ClassVisitor {
     // doing this to minify the size of classPool
     if (isBuiltin(binaryName)) {
       clazz = new ClassSignature();
+      clazz.jar = jar;
       clazz.binaryName = binaryName;
       classPool.put(binaryName, clazz);
       return CompletableFuture.completedFuture(clazz);
     }
 
-    byte[] raw = loadClazzBytes(binaryName);
+    byte[] raw = loadClazzBytes(jar, binaryName);
     result = new CompletableFuture<>();
 
     new ClassReader(raw).accept(this, ClassReader.SKIP_DEBUG);
     return result;
   }
 
-  private byte[] loadClazzBytes(String binaryName) throws FileNotFoundException {
+  public static byte[] loadClazzBytes(String jar, String binaryName) throws FileNotFoundException {
     String f = binaryName + ".class";
-    try {
-      Path path = Paths.get(jar, f);
-      return Files.readAllBytes(path);
-    } catch (IOException ignored) {
-    }
-
-    Path path = Paths.get(jrt, f);
+    Path path = Paths.get(jar, f);
     try {
       return Files.readAllBytes(path);
     } catch (IOException e) {
@@ -82,7 +76,7 @@ public class ClassResolver extends ClassVisitor {
     } else if (superName != null) {
       clazz = new ClassSignature();
       try {
-        ClassSignature n = new ClassResolver(jrt, jar, superName).resolve().get();
+        ClassSignature n = new ClassResolver(jar, superName).resolve().get();
         clazz.superClasses.add(n.toClassTypeSignature());
       } catch (InterruptedException | ExecutionException | IOException e) {
         e.printStackTrace();
@@ -92,22 +86,35 @@ public class ClassResolver extends ClassVisitor {
     }
     clazz.setName(name);
     clazz.isInterface = (access & Opcodes.ACC_INTERFACE) != 0;
+    clazz.isAbstract = (access & Opcodes.ACC_ABSTRACT) != 0;
+    clazz.isEnum = (access & Opcodes.ACC_ENUM) != 0;
 
+    clazz.jar = jar;
     classPool.put(clazz.binaryName, clazz);
   }
 
   @Override
   public FieldVisitor visitField(int access, String name, String descriptor, String signature, Object value) {
     TypeSignature ts = new Parser(signature != null ? signature : descriptor).parseTypeSignature();
+    ts.isStatic = (access & Opcodes.ACC_STATIC) != 0;
     clazz.fields.put(name, ts);
+    if ((access & Opcodes.ACC_PRIVATE) != 0) {
+      clazz.privateFields.add(name);
+    }
     return super.visitField(access, name, descriptor, signature, value);
   }
 
   @Override
   public MethodVisitor visitMethod(int access, String name, String descriptor, String signature, String[] exceptions) {
     MethodTypeSignature ts = new Parser(signature != null ? signature : descriptor).parseMethodTypeSignature();
-    clazz.methods.put(name, ts);
-    return super.visitMethod(access, name, descriptor, signature, exceptions);
+    clazz.addMethod(name, ts);
+    super.visitMethod(access, name, descriptor, signature, exceptions);
+    return new MethodVisitor(Opcodes.ASM6) {
+      @Override
+      public void visitParameter(String name, int access) {
+        ts.formalParams.add(name);
+      }
+    };
   }
 
   @Override
@@ -116,7 +123,7 @@ public class ClassResolver extends ClassVisitor {
     HashSet<String> refs = clazz.collectRefClasses();
     for (String ref : refs) {
       try {
-        new ClassResolver(jrt, jar, ref).resolve().get();
+        new ClassResolver(jar, ref).resolve().get();
       } catch (InterruptedException | ExecutionException | IOException e) {
         e.printStackTrace();
       }
@@ -130,7 +137,19 @@ public class ClassResolver extends ClassVisitor {
     return classPool;
   }
 
-  private boolean isBuiltin(String binaryName) {
-    return binaryName.startsWith("java/") || binaryName.startsWith("sun/");
+  public static HashMap<String, ClassSignature> getClassPoolWithoutBuiltin() {
+    HashMap<String, ClassSignature> ret = new HashMap<>();
+    for (Map.Entry<String, ClassSignature> entry : classPool.entrySet()) {
+      String key = entry.getKey();
+      if (isBuiltin(key)) {
+        continue;
+      }
+      ret.put(key, entry.getValue());
+    }
+    return ret;
+  }
+
+  private static boolean isBuiltin(String binaryName) {
+    return RuntimeList.has(binaryName);
   }
 }
