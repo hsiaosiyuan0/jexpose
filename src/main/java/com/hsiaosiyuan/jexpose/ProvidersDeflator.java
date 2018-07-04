@@ -5,6 +5,7 @@ import com.alibaba.fastjson.serializer.SerializerFeature;
 import com.hsiaosiyuan.jexpose.signature.node.ClassSignature;
 import net.lingala.zip4j.core.ZipFile;
 import net.lingala.zip4j.exception.ZipException;
+import net.lingala.zip4j.progress.ProgressMonitor;
 import org.apache.commons.io.FilenameUtils;
 
 import java.io.BufferedWriter;
@@ -15,8 +16,10 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.LinkedList;
 import java.util.Map;
 import java.util.concurrent.ExecutionException;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 public class ProvidersDeflator {
@@ -24,6 +27,8 @@ public class ProvidersDeflator {
   private File entryJar;
   private File libDir;
   private String providerSuffix;
+  private Pattern include;
+  private Pattern exclude;
 
   private ArrayList<String> providerNames;
   private HashMap<String, ClassSignature> resolvedProviders;
@@ -32,7 +37,14 @@ public class ProvidersDeflator {
   private static File extractedDir;
   private static File outputDir;
 
-  public ProvidersDeflator(String entry, String entryJarPath, String libDirPath, String providerSuffix) {
+  public ProvidersDeflator(
+    String entry,
+    String entryJarPath,
+    String libDirPath,
+    String providerSuffix,
+    Pattern include,
+    Pattern exclude
+  ) {
     this.providerSuffix = providerSuffix;
     entryName = entry;
 
@@ -43,6 +55,9 @@ public class ProvidersDeflator {
     file = new File(libDirPath);
     if (!file.isDirectory()) throw new IllegalArgumentException("malformed path of lib directory");
     libDir = file;
+
+    this.include = include;
+    this.exclude = exclude;
 
     providerNames = new ArrayList<>();
     resolvedProviders = new HashMap<>();
@@ -77,16 +92,23 @@ public class ProvidersDeflator {
     return jars;
   }
 
-  private void extractAndMergeJars() throws ZipException {
+  private void extractAndMergeJars() throws ZipException, InterruptedException {
     ArrayList<File> jars = scanJarDir(libDir);
     jars.add(entryJar);
+    LinkedList<ZipFile> zipFiles = new LinkedList<>();
     for (File j : jars) {
       ZipFile zipFile = new ZipFile(j.getAbsolutePath());
+      zipFiles.add(zipFile);
+      zipFile.setRunInThread(true);
       try {
         zipFile.extractAll(extractedDir.getAbsolutePath());
       } catch (ZipException e) {
         System.out.println(Colorize.error("ZipException:" + e.getMessage()));
       }
+    }
+    while (zipFiles.size() > 0) {
+      zipFiles.removeIf(file -> file.getProgressMonitor().getState() != ProgressMonitor.STATE_BUSY);
+      Thread.sleep(300);
     }
   }
 
@@ -96,6 +118,25 @@ public class ProvidersDeflator {
     providerNames.addAll(walkAndScanProviders(entryDir.getAbsolutePath(), entryDir));
   }
 
+  private boolean isBlackFile(File file) {
+    return this.exclude != null && this.exclude.matcher(filenameWithoutExt(file)).matches();
+  }
+
+  private String filenameWithoutExt(File file) {
+    String name = file.getAbsolutePath();
+    int dot = name.lastIndexOf(".");
+    return name.substring(0, dot);
+  }
+
+  private boolean isWhiteFile(File file) {
+    String filename = filenameWithoutExt(file);
+    if (this.providerSuffix != null) {
+      String basename = FilenameUtils.getBaseName(filename);
+      return basename.endsWith(this.providerSuffix) && !isBlackFile(file);
+    }
+    return this.include.matcher(filename).matches() && !isBlackFile(file);
+  }
+
   private ArrayList<String> walkAndScanProviders(String root, File dir) {
     ArrayList<String> ret = new ArrayList<>();
     File[] files = dir.listFiles();
@@ -103,7 +144,7 @@ public class ProvidersDeflator {
     for (File f : files) {
       if (f.isDirectory()) {
         ret.addAll(walkAndScanProviders(root, f));
-      } else if (FilenameUtils.getBaseName(f.getName()).endsWith(this.providerSuffix)) {
+      } else if (isWhiteFile(f)) {
         String relativePath = f.getAbsolutePath().replace(root, "");
         String name = FilenameUtils.removeExtension(relativePath).replace(File.separator, ".");
         ret.add(entryName + name);
