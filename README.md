@@ -1,6 +1,7 @@
 # jexpose
 
-This project can expose class graph inside of jar.
+This project can expose class graph inside of jar. It is designed to just exposing the matches class files, 
+and will merge fields inherit from ancestor classes.
 
 ```
 jexpose -entry com.qianmi -entry-jar /w/qm/uc.jar -lib /w/qm/uc/dependencies -provider-suffix Provider -exclude ".*Score.*"
