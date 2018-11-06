@@ -1,6 +1,6 @@
 # jexpose
 
-This project can expose class graph inside of jar. 
+This project can expose class graph inside of jar. It has the honour of providing jar infomation to [dubbo2.js](https://github.com/dubbo/dubbo2.js) to generate typescript code.
 
 It is designed to just exposing the matching class files, and will merge fields inherit from ancestor classes. 
 It does not using reflection but reading bytecode within class files, the reason of this strategy is the original language 
@@ -42,6 +42,8 @@ After exposing, jexpose will produce a json file, content of it looks like:
 
 ## How to use
 
-1. `mvn package` to produce your target jar which is located at `PROJ_ROOT/target/xxx.jar`
-2. `mvn install dependency:copy-dependencies` to copy dependencies of the target jar into `PROJ_ROOT/target/dependency`
-3. `jexpose com.example PROJ_ROOT/target/example-x.x-SNAPSHOT.jar PROJ_ROOT/target/dependency`
+1. First, you'll build your project, use `mvn package` to produce your target jar which is located at `PROJ_ROOT/target/xxx.jar` 
+
+  `PROJ_ROOT` refers to the root directory of your project.
+2. Second, you'll collect your project' dependencies, use `mvn install dependency:copy-dependencies` to copy dependencies of the target jar into `PROJ_ROOT/target/dependency`
+3. Ready to expose, use `jexpose com.example PROJ_ROOT/target/example-x.x-SNAPSHOT.jar PROJ_ROOT/target/dependency`
