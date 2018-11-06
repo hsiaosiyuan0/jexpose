@@ -42,8 +42,10 @@ After exposing, jexpose will produce a json file, content of it looks like:
 
 ## How to use
 
-1. First, you'll build your project, use `mvn package` to produce your target jar which is located at `PROJ_ROOT/target/xxx.jar` 
+`PROJ_ROOT` refers to the root directory of your project.
 
-  `PROJ_ROOT` refers to the root directory of your project.
+1. First, you'll build your project, use `mvn package` to produce your target jar which is located at `PROJ_ROOT/target/xxx.jar` 
+  
 2. Second, you'll collect your project' dependencies, use `mvn install dependency:copy-dependencies` to copy dependencies of the target jar into `PROJ_ROOT/target/dependency`
+
 3. Ready to expose, use `jexpose com.example PROJ_ROOT/target/example-x.x-SNAPSHOT.jar PROJ_ROOT/target/dependency`
