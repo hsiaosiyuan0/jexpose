@@ -19,7 +19,6 @@ import com.hsiaosiyuan.jexpose.signature.node.ClassSignature;
 
 import cn.hutool.core.io.FileUtil;
 import cn.hutool.core.util.ZipUtil;
-import net.lingala.zip4j.exception.ZipException;
 
 public class ProvidersDeflator {
 	private String entryName;
@@ -58,7 +57,7 @@ public class ProvidersDeflator {
 		resolvedProviders = new HashMap<>();
 	}
 
-	public String process() throws IOException, ZipException, ExecutionException, InterruptedException {
+	public String process() throws IOException, ExecutionException, InterruptedException {
 		makeOutputDir();
 		extractAndMergeJars();
 		scanProviders();
@@ -69,17 +68,14 @@ public class ProvidersDeflator {
 
 	private void makeOutputDir() throws IOException {
 		String userhome = System.getProperty("user.dir").replaceAll("/", File.separator);
-		System.out.println("获取用户目录:" + userhome);
+		System.out.println("Get user directory:" + userhome);
 		String masterdir = userhome + File.separator + "jexpose" + File.separator;
-		String masterdir1 = userhome + File.separator + "ts" + File.separator;
-		System.out.println("清空工作目录:" + masterdir);
-		new File(masterdir1).setWritable(true);
-		// System.out.println("清空工作目录1:" + masterdir1);
-		FileUtil.del(masterdir);
+		System.out.println("Clear working directory:" + masterdir);
+
 		String te = (userhome + File.separator + "jexpose" + File.separator + UUID.randomUUID()).replaceAll("/",
 				File.separator);
 		FileUtil.mkdir(te);
-		System.out.println("生成临时目录:" + te);
+		System.out.println("Generate temporary directory:" + te);
 		distDir = new File(te);
 		extractedDir = new File(Paths.get(distDir.getAbsolutePath(), "extracted").toString());
 		outputDir = new File(Paths.get(distDir.getAbsolutePath(), "output").toString());
@@ -102,7 +98,7 @@ public class ProvidersDeflator {
 		return jars;
 	}
 
-	private void extractAndMergeJars() throws ZipException, InterruptedException {
+	private void extractAndMergeJars() throws InterruptedException {
 		ArrayList<File> jars = scanJarDir(libDir);
 		jars.add(entryJar);
 		for (File j : jars) {

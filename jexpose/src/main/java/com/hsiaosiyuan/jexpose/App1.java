@@ -12,11 +12,9 @@ import org.apache.commons.cli.DefaultParser;
 import org.apache.commons.cli.HelpFormatter;
 import org.apache.commons.cli.Options;
 
-import net.lingala.zip4j.exception.ZipException;
-
 public class App1 {
 
-	public static void main(String[] args1) throws IOException, ExecutionException, InterruptedException, ZipException {
+	public static void main(String[] args1) throws IOException, ExecutionException, InterruptedException {
 		String userhome = System.getProperty("user.dir").replaceAll("/", File.separator);
 		System.out.println("获取用户目录:" + userhome);
 
