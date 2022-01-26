@@ -18,8 +18,10 @@ package com.hsiaosiyuan.jexpose;
 
 import com.hsiaosiyuan.jexpose.signature.Parser;
 import com.hsiaosiyuan.jexpose.signature.node.ClassSignature;
+import com.hsiaosiyuan.jexpose.signature.node.ClassTypeSignature;
 import com.hsiaosiyuan.jexpose.signature.node.MethodTypeSignature;
 import com.hsiaosiyuan.jexpose.signature.node.TypeSignature;
+import org.apache.commons.lang3.StringUtils;
 import org.objectweb.asm.*;
 
 import java.io.FileNotFoundException;
@@ -34,6 +36,9 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 
+/**
+ * @author hsiaosiyuan
+ */
 public class ClassResolver extends ClassVisitor {
 
   private static final HashMap<String, ClassSignature> classPool = new HashMap<>();
@@ -117,7 +122,34 @@ public class ClassResolver extends ClassVisitor {
     if ((access & Opcodes.ACC_PRIVATE) != 0) {
       clazz.privateFields.add(name);
     }
-    return super.visitField(access, name, descriptor, signature, value);
+    super.visitField(access, name, descriptor, signature, value);
+    return new FieldVisitor(Opcodes.ASM6) {
+      @Override
+      public AnnotationVisitor visitAnnotation(final String descriptor, final boolean visible) {
+        if (cv != null) {
+          cv.visitAnnotation(descriptor, visible);
+        }
+        return new AnnotationVisitor(Opcodes.ASM6) {
+          @Override
+          public void visit(final String annotationName, final Object value) {
+            if (StringUtils.equalsIgnoreCase("Lio/swagger/annotations/ApiModelProperty;", descriptor)) {
+              TypeSignature typeSignature = clazz.fields.get(name);
+              if (typeSignature != null) {
+                try {
+                  ClassTypeSignature classTypeSignature = (ClassTypeSignature) typeSignature;
+                  classTypeSignature.setAnnotation((String) value);
+                } catch (Exception e) {
+//                  System.out.println("error:" + e.getMessage());
+                }
+              }
+            }
+            if (av != null) {
+              av.visit(annotationName, value);
+            }
+          }
+        };
+      }
+    };
   }
 
   @Override

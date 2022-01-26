@@ -16,7 +16,6 @@
  */
 package com.hsiaosiyuan.jexpose;
 
-import com.sun.javaws.exceptions.InvalidArgumentException;
 import net.lingala.zip4j.exception.ZipException;
 import org.apache.commons.cli.*;
 
@@ -25,6 +24,9 @@ import java.io.PrintStream;
 import java.util.concurrent.ExecutionException;
 import java.util.regex.Pattern;
 
+/**
+ * @author hsiaosiyuan
+ */
 public class App {
 
   public static void main(String[] args) throws IOException, ExecutionException, InterruptedException, ZipException {
@@ -44,19 +46,19 @@ public class App {
     try {
       line = parser.parse(options, args);
       if (!line.hasOption("entry")) {
-        throw new InvalidArgumentException(new String[]{"missing entry"});
+        throw new IllegalArgumentException("missing entry");
       }
       if (!line.hasOption("entry-jar")) {
-        throw new InvalidArgumentException(new String[]{"missing entry-jar"});
+        throw new IllegalArgumentException("missing entry-jar");
       }
       if (!line.hasOption("lib")) {
-        throw new InvalidArgumentException(new String[]{"missing lib"});
+        throw new IllegalArgumentException("missing lib");
       }
       providerSuffix = line.getOptionValue("provider-suffix");
 
       String includeStr = line.getOptionValue("include");
       if (providerSuffix == null && includeStr == null) {
-        throw new InvalidArgumentException(new String[]{"missing either provider-suffix or filter"});
+        throw new IllegalArgumentException("missing either provider-suffix or filter");
       }
       if (includeStr != null) {
         include = Pattern.compile(includeStr);
