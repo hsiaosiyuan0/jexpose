@@ -31,6 +31,7 @@ public class ClassTypeSignature extends FieldTypeSignature {
   public String binaryName;
   public LinkedList<TypeArg> typeArgs;
   public String annotation;
+  public boolean required = false;
 
   @JSONField(serialize = false)
   public LinkedList<Sub> subTypes;
@@ -147,5 +148,9 @@ public class ClassTypeSignature extends FieldTypeSignature {
 
   public void setAnnotation(String annotation) {
     this.annotation = annotation;
+  }
+
+  public void setRequired(boolean required) {
+    this.required = required;
   }
 }

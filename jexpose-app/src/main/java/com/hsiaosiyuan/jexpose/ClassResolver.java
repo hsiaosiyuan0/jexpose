@@ -137,9 +137,13 @@ public class ClassResolver extends ClassVisitor {
               if (typeSignature != null) {
                 try {
                   ClassTypeSignature classTypeSignature = (ClassTypeSignature) typeSignature;
-                  classTypeSignature.setAnnotation((String) value);
+                  if (StringUtils.equalsIgnoreCase(annotationName, "value")) {
+                    classTypeSignature.setAnnotation((String) value);
+                  }
+                  if (StringUtils.equalsIgnoreCase(annotationName, "required") && value != null && (boolean) value) {
+                    classTypeSignature.setRequired(true);
+                  }
                 } catch (Exception e) {
-//                  System.out.println("error:" + e.getMessage());
                 }
               }
             }
