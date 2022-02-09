@@ -23,10 +23,15 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
 
+/**
+ * @author hsiaosiyuan, zhengyi
+ */
 public class ClassTypeSignature extends FieldTypeSignature {
   @JSONField(serialize = false)
   public String binaryName;
   public LinkedList<TypeArg> typeArgs;
+  public String annotation;
+  public boolean required = false;
 
   @JSONField(serialize = false)
   public LinkedList<Sub> subTypes;
@@ -139,5 +144,13 @@ public class ClassTypeSignature extends FieldTypeSignature {
         a.type.applyTypeArgs(args);
       }
     }
+  }
+
+  public void setAnnotation(String annotation) {
+    this.annotation = annotation;
+  }
+
+  public void setRequired(boolean required) {
+    this.required = required;
   }
 }

@@ -7,10 +7,12 @@
         <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
         <outputRelativeToContentRoot value="true" />
         <module name="testjar" />
+        <module name="jexpose-app" />
       </profile>
     </annotationProcessing>
-    <bytecodeTargetLevel>
-      <module name="jexpose" target="8" />
+    <bytecodeTargetLevel target="8">
+      <module name="jexpose" target="1.8" />
+      <module name="jexpose-app" target="1.8" />
       <module name="testjar" target="8" />
     </bytecodeTargetLevel>
   </component>
