@@ -4,7 +4,7 @@
 
   <groupId>com.hsiaosiyuan.jexpose</groupId>
   <artifactId>jexpose</artifactId>
-  <version>1.4-SNAPSHOT</version>
+  <version>1.5-SNAPSHOT</version>
   <packaging>pom</packaging>
 
   <properties>
